@@ -181,6 +181,18 @@
       width: 100%;
     }
 
+    /* 🔒 Milk item label (not editable) */
+    .milk-item {
+      width: 100%;
+      padding: 7px 8px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #eef2ff;
+      font-size: 13px;
+      text-align: center;
+      user-select: none;
+    }
+
     .btn-row {
       display: flex;
       justify-content: center;
@@ -361,40 +373,40 @@
         </tr>
       </thead>
       <tbody>
-        <!-- તમે Easy edit કરી શકો: Item નામ બદલો / rows વધારી શકો -->
+        <!-- Item column હવે lock છે -->
         <tr>
           <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
-          <td><input type="text" class="milk-item" value="લીટર"></td>
+          <td><div class="milk-item">લીટર</div></td>
           <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
         </tr>
         <tr>
           <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
-          <td><input type="text" class="milk-item" value="તાજા"></td>
+          <td><div class="milk-item">તાજા</div></td>
           <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
         </tr>
         <tr>
           <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
-          <td><input type="text" class="milk-item" value="છાશ"></td>
+          <td><div class="milk-item">છાશ</div></td>
           <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
         </tr>
         <tr>
           <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
-          <td><input type="text" class="milk-item" value="ઠબુડા"></td>
+          <td><div class="milk-item">ઠબુડા</div></td>
           <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
         </tr>
         <tr>
           <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
-          <td><input type="text" class="milk-item" value="દહીં"></td>
+          <td><div class="milk-item">દહીં</div></td>
           <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
         </tr>
         <tr>
           <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
-          <td><input type="text" class="milk-item" value="ખાટી છાશ"></td>
+          <td><div class="milk-item">ખાટી છાશ</div></td>
           <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
         </tr>
         <tr>
           <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
-          <td><input type="text" class="milk-item" value="માખણ"></td>
+          <td><div class="milk-item">માખણ</div></td>
           <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
         </tr>
       </tbody>
@@ -426,6 +438,7 @@
       </div>
     </div>
 
+    <!-- Cold drink rows (unchanged) -->
     <!-- 250 ml Small -->
     <div class="cold-group">
       <div class="cold-group-title">250 ml <span class="sub">Small</span></div>
@@ -471,7 +484,7 @@
       </div>
       <div class="cold-row" data-ml="250" data-group="250-small">
         <div class="cold-brand">Maaza</div>
-        <div class="cold-ml">250</div>
+        <div class="cold-ml">140</div>
         <input class="cold-qty" type="number" min="0" step="1">
       </div>
     </div>
@@ -577,7 +590,7 @@
   </section>
 
   <script>
-    // 🔗 Firebase base URL (તમારું Realtime DB URL)
+    // 🔗 Firebase base URL
     const FIREBASE_BASE =
       "https://booking-e751e-default-rtdb.firebaseio.com/dailyStock";
 
@@ -623,7 +636,7 @@
       const term = e.target.value.toLowerCase().trim();
       document.querySelectorAll("#milkTable tbody tr").forEach((row) => {
         const itemVal =
-          row.querySelector(".milk-item").value.toLowerCase() || "";
+          row.querySelector(".milk-item").textContent.toLowerCase() || "";
         row.style.display = term && !itemVal.includes(term) ? "none" : "";
       });
     });
@@ -654,7 +667,7 @@
         document.querySelectorAll("#milkTable tbody tr")
       ).map((row) => ({
         stock: row.querySelector(".milk-stock").value || "",
-        item: row.querySelector(".milk-item").value || "",
+        item: row.querySelector(".milk-item").textContent.trim() || "",
         auto: row.querySelector(".milk-auto").value || "",
       }));
 
@@ -689,8 +702,8 @@
         rows.forEach((row, idx) => {
           const d = data.milk.rows[idx] || {};
           row.querySelector(".milk-stock").value = d.stock || "";
-          row.querySelector(".milk-item").value = d.item || "";
           row.querySelector(".milk-auto").value = d.auto || "";
+          // item label fix છે, બદલતા નથી
         });
       }
       if (data.cold && data.cold.rows) {
@@ -811,4 +824,4 @@
     document.getElementById("btnWABottom").addEventListener("click", openWhatsApp);
   </script>
 </body>
-</html>
+        </html>
