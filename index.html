@@ -3,139 +3,356 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Auto Daily Stock Sheet</title>
+  <title>Auto Daily Stock + Cold Drink Stock</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Noto+Sans+Gujarati:wght@400;700&display=swap" rel="stylesheet"/>
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      text-align: center;
-      padding: 20px;
-    }
-    .card {
-      background: white;
-      padding: 16px;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      display: inline-block;
-      width: 95%;
-      max-width: 640px;
-    }
-    .totals {
+      margin: 0;
+      font-family: "Noto Sans Gujarati", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #e3f2fd 0, #f5f7ff 40%, #e8f5e9 100%);
+      min-height: 100vh;
+      padding: 18px 10px 40px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: center;
+      color: #111827;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 520px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 18px 14px 20px;
+      box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16);
+      margin-bottom: 22px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
       gap: 10px;
-      margin: 6px 0 12px 0;
+      margin-bottom: 14px;
     }
-    .total-box {
+    .card-header span.emoji {
+      font-size: 26px;
+    }
+    .card-header h1,
+    .card-header h2 {
+      margin: 0;
+      font-family: "Baloo 2", system-ui;
+      font-size: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .sub-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    input[type="date"],
+    input[type="text"],
+    input[type="number"],
+    .search-input {
+      width: 100%;
+      padding: 9px 11px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.05s;
+      background: #f9fafb;
+    }
+    input:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.17);
+      background: #ffffff;
+      transform: translateY(-0.5px);
+    }
+
+    .search-wrapper {
+      position: relative;
       flex: 1;
-      background: #111827;
-      color: #fff;
-      padding: 10px;
-      border-radius: 8px;
+    }
+    .search-wrapper .search-input {
+      padding-left: 28px;
+    }
+    .search-wrapper::before {
+      content: "🔍";
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+    .date-wrapper {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .mini-label {
+      font-size: 11px;
+      margin-bottom: 3px;
+      color: #6b7280;
+      font-weight: 600;
+    }
+
+    .totals-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .total-pill {
+      flex: 1;
+      min-width: 150px;
+      border-radius: 16px;
+      padding: 9px 10px;
+      background: linear-gradient(120deg, #eef2ff, #e0f2fe);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 16px rgba(148, 163, 184, 0.35);
+    }
+    .total-pill.green {
+      background: linear-gradient(120deg, #dcfce7, #bbf7d0);
+    }
+    .total-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #4b5563;
+      letter-spacing: 0.06em;
       font-weight: 700;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      margin-bottom: 4px;
     }
-    .total-box small {
-      display: block;
-      font-weight: 400;
-      font-size: 12px;
-      opacity: 0.9;
+    .total-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111827;
     }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 10px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #f9fafb;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+      margin-bottom: 12px;
+    }
+    thead {
+      background: linear-gradient(90deg, #1d4ed8, #22c55e);
+      color: #ffffff;
     }
     th, td {
-      border: 1px solid #e6e6e6;
-      padding: 8px;
-    }
-    th {
-      background: #fafafa;
-      font-weight: bold;
+      padding: 7px 6px;
+      font-size: 12px;
       text-align: center;
-      font-size: 14px;
+      border-bottom: 1px solid #e5e7eb;
     }
-    td {
-      text-align: center;
-      font-size: 14px;
+    th:nth-child(2) {
+      min-width: 120px;
     }
-    input[type="number"], input[type="text"], input[type="date"] {
-      width: 90%;
-      max-width: 220px;
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      text-align: center;
-      box-sizing: border-box;
+    tbody tr:nth-child(even) {
+      background-color: #f3f4f6;
     }
-    button {
-      padding: 10px 14px;
-      border: none;
-      border-radius: 8px;
-      margin: 6px;
-      font-weight: bold;
-      cursor: pointer;
+    tbody tr:last-child td {
+      border-bottom: none;
     }
-    #saveBtn { background: #f59e0b; color: #fff; }
-    #loadBtn { background: #3b82f6; color: #fff; }
-    #whatsappBtn { background: #25D366; color: #fff; }
-    #searchBar {
-      width: 92%;
-      padding: 8px;
+    td input {
+      width: 100%;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
       margin-top: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      box-sizing: border-box;
+      flex-wrap: wrap;
     }
-    .meta-row {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:8px;
-      margin-bottom:8px;
-      flex-wrap:wrap;
+    .btn {
+      border: none;
+      outline: none;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 9px 18px rgba(15, 23, 42, 0.22);
+      transition: transform 0.07s, box-shadow 0.07s, opacity 0.1s;
+      color: #ffffff;
+      background: linear-gradient(135deg, #fb923c, #f97316);
     }
-    @media (max-width:480px){
-      .totals { flex-direction: column; gap:8px; }
-      input[type="number"], input[type="text"], input[type="date"] {
-        width: 100%;
-        max-width: none;
+    .btn.blue {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    }
+    .btn.green {
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+    .btn:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+      opacity: 0.9;
+    }
+
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: #22c55e;
+      color: #ffffff;
+      box-shadow: 0 6px 12px rgba(34, 197, 94, 0.4);
+    }
+
+    /* Cold drink layout */
+
+    .cold-group-title {
+      font-size: 13px;
+      font-weight: 800;
+      margin: 10px 0 4px;
+      color: #0f172a;
+    }
+    .cold-group-title span.sub {
+      font-weight: 600;
+      font-size: 11px;
+      color: #6b7280;
+      margin-left: 4px;
+    }
+    .cold-row {
+      display: grid;
+      grid-template-columns: 1.6fr 0.6fr 0.8fr;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 0;
+      border-bottom: 1px dashed #e5e7eb;
+      font-size: 12px;
+    }
+    .cold-row:last-child {
+      border-bottom: none;
+    }
+    .cold-brand {
+      text-align: left;
+      padding-left: 2px;
+    }
+    .cold-ml {
+      text-align: center;
+      font-weight: 600;
+      color: #4b5563;
+    }
+    .cold-qty {
+      width: 100%;
+      text-align: center;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .cold-qty:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.17);
+      background: #ffffff;
+    }
+
+    .cold-footer-totals {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .cold-footer-totals .total-pill {
+      flex: 1;
+      min-width: 150px;
+    }
+
+    .no-data {
+      margin-top: 6px;
+      font-size: 11px;
+      color: #b91c1c;
+      text-align: center;
+    }
+
+    .hint {
+      font-size: 10px;
+      color: #6b7280;
+      text-align: center;
+      margin-top: 6px;
+    }
+
+    @media (min-width: 600px) {
+      body {
+        padding-top: 28px;
       }
-      .card { padding:12px; }
+      .card {
+        padding: 20px 18px 22px;
+      }
     }
   </style>
 </head>
-
 <body>
-  <div class="card">
-    <h2>📦 Auto Daily Stock Sheet</h2>
 
-    <div class="meta-row">
-      <div>
-        <label>તારીખ:</label><br>
-        <input type="date" id="date">
+  <!-- ========== TOP: AUTO DAILY STOCK SHEET (MILK) ========== -->
+  <section class="card" id="milkCard">
+    <div class="card-header">
+      <span class="emoji">📦</span>
+      <h1>Auto Daily Stock Sheet</h1>
+    </div>
+
+    <div class="sub-row">
+      <div class="date-wrapper">
+        <div class="mini-label">તારીખ</div>
+        <input type="date" id="milkDate">
       </div>
-
-      <div style="text-align:right; flex:1;">
-        <input type="text" id="searchBar" placeholder="🔍 વસ્તુ શોધો...">
+      <div class="search-wrapper">
+        <div class="mini-label">વસ્તુ શોધો...</div>
+        <input type="text" id="milkSearch" class="search-input" placeholder="જેમ કે: દૂધ, છાશ...">
       </div>
     </div>
 
-    <!-- TOP TOTALS -->
-    <div class="totals">
-      <div class="total-box" id="totalStockBox">
-        <div style="font-size:20px" id="totalStock">0</div>
-        <small>સંપૂર્ણ Stock</small>
+    <div class="totals-row">
+      <div class="total-pill">
+        <div class="total-label">કુલ Stock</div>
+        <div class="total-value" id="milkTotalStock">0</div>
       </div>
-      <div class="total-box" id="totalAutoBox">
-        <div style="font-size:20px" id="totalAuto">0</div>
-        <small>સંપૂર્ણ Auto</small>
+      <div class="total-pill green">
+        <div class="total-label">કુલ Auto</div>
+        <div class="total-value" id="milkTotalAuto">0</div>
       </div>
     </div>
 
-    <table id="stockTable">
+    <table id="milkTable">
       <thead>
         <tr>
           <th>Stock</th>
@@ -144,604 +361,454 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td><input type="number" min="0" step="any"></td><td>લીટર</td><td><input type="number" min="0" step="any"></td></tr>
-        <tr><td><input type="number" min="0" step="any"></td><td>તાજા</td><td><input type="number" min="0" step="any"></td></tr>
-        <tr><td><input type="number" min="0" step="any"></td><td>છાસ</td><td><input type="number" min="0" step="any"></td></tr>
-        <tr><td><input type="number" min="0" step="any"></td><td>ઠબુડા</td><td><input type="number" min="0" step="any"></td></tr>
-        <tr><td><input type="number" min="0" step="any"></td><td>દહી</td><td><input type="number" min="0" step="any"></td></tr>
-        <tr><td><input type="number" min="0" step="any"></td><td>ખાટી છાસ</td><td><input type="number" min="0" step="any"></td></tr>
-        <tr><td><input type="number" min="0" step="any"></td><td>માખણ</td><td><input type="number" min="0" step="any"></td></tr>
+        <!-- તમે Easy edit કરી શકો: Item નામ બદલો / rows વધારી શકો -->
+        <tr>
+          <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
+          <td><input type="text" class="milk-item" value="લીટર"></td>
+          <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
+        </tr>
+        <tr>
+          <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
+          <td><input type="text" class="milk-item" value="લસ્સી"></td>
+          <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
+        </tr>
+        <tr>
+          <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
+          <td><input type="text" class="milk-item" value="છાશ"></td>
+          <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
+        </tr>
+        <tr>
+          <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
+          <td><input type="text" class="milk-item" value="કોથા"></td>
+          <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
+        </tr>
+        <tr>
+          <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
+          <td><input type="text" class="milk-item" value="દહીં"></td>
+          <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
+        </tr>
+        <tr>
+          <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
+          <td><input type="text" class="milk-item" value="ખાટી છાશ"></td>
+          <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
+        </tr>
+        <tr>
+          <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
+          <td><input type="text" class="milk-item" value="મામરા"></td>
+          <td><input type="number" class="milk-auto" min="0" step="0.01"></td>
+        </tr>
       </tbody>
     </table>
 
-    <div style="margin-top:10px; text-align:center;">
-      <button id="saveBtn" onclick="saveData()">💾 Save</button>
-      <button id="loadBtn" onclick="loadData()">📂 Load</button>
-      <button id="whatsappBtn" onclick="shareWhatsApp()">🟢 WhatsApp</button>
+    <div class="btn-row">
+      <button class="btn" id="btnSaveTop">💾 Save</button>
+      <button class="btn blue" id="btnLoadTop">📂 Load</button>
+      <button class="btn green" id="btnWATop">🟢 WhatsApp</button>
     </div>
-  </div>
 
-  <!-- Firebase compat libraries -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <div class="hint">Note: ઉપર Save / Load બંને સેકશન (Milk + Cold Drink) એકસાથે Save થશે.</div>
+  </section>
+
+  <!-- ========== BOTTOM: COLD DRINK STOCK ========== -->
+  <section class="card" id="coldCard">
+    <div class="section-title-row">
+      <div class="card-header" style="margin-bottom:0;padding:0;gap:8px;justify-content:flex-start;">
+        <span class="emoji">🥤</span>
+        <h2>Cold Drink Stock</h2>
+      </div>
+      <div class="badge">Daily Sheet</div>
+    </div>
+
+    <div class="sub-row">
+      <div class="date-wrapper">
+        <div class="mini-label">Date</div>
+        <input type="date" id="coldDate">
+      </div>
+    </div>
+
+    <!-- 250 ml Small -->
+    <div class="cold-group">
+      <div class="cold-group-title">250 ml <span class="sub">Small</span></div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Thumpup</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Sprite</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Maza</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Fanta</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Cocacola</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Palpy orange</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Charge</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Soda</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="250" data-group="250-small">
+        <div class="cold-brand">Maaza</div>
+        <div class="cold-ml">250</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+    </div>
+
+    <!-- 750 ml Medium -->
+    <div class="cold-group">
+      <div class="cold-group-title">750 ml <span class="sub">Medium</span></div>
+      <div class="cold-row" data-ml="750" data-group="750-medium">
+        <div class="cold-brand">Thumpup</div>
+        <div class="cold-ml">750</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="750" data-group="750-medium">
+        <div class="cold-brand">Sprite</div>
+        <div class="cold-ml">750</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="750" data-group="750-medium">
+        <div class="cold-brand">Fanta</div>
+        <div class="cold-ml">750</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="750" data-group="750-medium">
+        <div class="cold-brand">Soda</div>
+        <div class="cold-ml">750</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+    </div>
+
+    <!-- 1 Liter Family -->
+    <div class="cold-group">
+      <div class="cold-group-title">1 Liter <span class="sub">Family</span></div>
+      <div class="cold-row" data-ml="1000" data-group="1l-family">
+        <div class="cold-brand">Thumpup</div>
+        <div class="cold-ml">1L</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="1000" data-group="1l-family">
+        <div class="cold-brand">Sprite</div>
+        <div class="cold-ml">1L</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="1000" data-group="1l-family">
+        <div class="cold-brand">Fanta</div>
+        <div class="cold-ml">1L</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="1000" data-group="1l-family">
+        <div class="cold-brand">Maza</div>
+        <div class="cold-ml">1L</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+    </div>
+
+    <!-- 2.25 Liter Party -->
+    <div class="cold-group">
+      <div class="cold-group-title">2.25 Liter <span class="sub">Party</span></div>
+      <div class="cold-row" data-ml="2250" data-group="2_25-party">
+        <div class="cold-brand">Thumpup</div>
+        <div class="cold-ml">2.25L</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="2250" data-group="2_25-party">
+        <div class="cold-brand">Sprite</div>
+        <div class="cold-ml">2.25L</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+      <div class="cold-row" data-ml="2250" data-group="2_25-party">
+        <div class="cold-brand">Fanta</div>
+        <div class="cold-ml">2.25L</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+    </div>
+
+    <!-- Water -->
+    <div class="cold-group">
+      <div class="cold-group-title">Water & Summary</div>
+      <div class="cold-row" data-ml="1000" data-group="water">
+        <div class="cold-brand">Whoter 1 Liter</div>
+        <div class="cold-ml">1L</div>
+        <input class="cold-qty" type="number" min="0" step="1">
+      </div>
+    </div>
+
+    <div class="cold-footer-totals">
+      <div class="total-pill">
+        <div class="total-label">Total Bottle</div>
+        <div class="total-value" id="coldTotalBottle">0</div>
+      </div>
+      <div class="total-pill green">
+        <div class="total-label">Total Liter</div>
+        <div class="total-value" id="coldTotalLiter">0.00</div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn" id="btnSaveBottom">💾 Save</button>
+      <button class="btn blue" id="btnLoadBottom">📂 Load</button>
+      <button class="btn green" id="btnWABottom">🟢 WhatsApp</button>
+    </div>
+
+    <div class="no-data" id="noDataMsg">No data found for this date.</div>
+  </section>
 
   <script>
-  // 🔗 NEW: booking-e751e database URL
-  const firebaseConfig = {
-    databaseURL: "https://booking-e751e-default-rtdb.firebaseio.com/"
-  };
-  firebase.initializeApp(firebaseConfig);
+    // 🔗 Firebase base URL (તમારું Realtime DB URL)
+    const FIREBASE_BASE =
+      "https://booking-e751e-default-rtdb.firebaseio.com/dailyStock";
 
-  // elements
-  const dateEl = document.getElementById('date');
-  const searchEl = document.getElementById('searchBar');
-  const totalStockEl = document.getElementById('totalStock');
-  const totalAutoEl = document.getElementById('totalAuto');
-  const rowsSelector = () =>
-    Array.from(document.querySelectorAll('#stockTable tbody tr'));
-
-  // set today's date
-  window.onload = () => {
-    dateEl.value = new Date().toISOString().split('T')[0];
-    attachInputListeners();
-    updateTotals();
-  };
-
-  // attach listeners to inputs so totals update live
-  function attachInputListeners(){
-    rowsSelector().forEach(row => {
-      const inputs = row.querySelectorAll('input');
-      inputs.forEach(inp => {
-        inp.addEventListener('input', updateTotals);
-      });
-    });
-
-    searchEl.addEventListener('input', () => {
-      applyFilter();
-      updateTotals();
-    });
-
-    dateEl.addEventListener('change', updateTotals);
-  }
-
-  // filter rows by search query
-  function applyFilter(){
-    const q = searchEl.value.trim().toLowerCase();
-    rowsSelector().forEach(row => {
-      const name = row.children[1].innerText.toLowerCase();
-      row.style.display = (q === '' || name.includes(q)) ? '' : 'none';
-    });
-  }
-
-  // compute totals only for visible rows
-  function updateTotals(){
-    let totalStock = 0;
-    let totalAuto = 0;
-    rowsSelector().forEach(row => {
-      if (row.style.display === 'none') return;
-      const stockVal = parseFloat(
-        row.children[0].querySelector('input').value
-      ) || 0;
-      const autoVal = parseFloat(
-        row.children[2].querySelector('input').value
-      ) || 0;
-      totalStock += stockVal;
-      totalAuto += autoVal;
-    });
-    totalStockEl.innerText = Number.isInteger(totalStock)
-      ? totalStock
-      : totalStock.toFixed(2);
-    totalAutoEl.innerText = Number.isInteger(totalAuto)
-      ? totalAuto
-      : totalAuto.toFixed(2);
-  }
-
-  // SAVE data to Firebase
-  function saveData(){
-    const date = dateEl.value;
-    if (!date) return alert('કૃપા કરીને તારીખ પસંદ કરો!');
-
-    const data = rowsSelector().map(row => {
-      const name  = row.children[1].innerText.trim();
-      const stock = row.children[0].querySelector('input').value || '0';
-      const auto  = row.children[2].querySelector('input').value || '0';
-      return { name, stock, auto };
-    });
-
-    firebase.database().ref('stockData/' + date).set(data)
-      .then(() => {
-        alert('✅ ડેટા સાચવાયો!');
-      })
-      .catch(err => {
-        alert('Save failed: ' + err.message);
-      });
-  }
-
-  // LOAD data from Firebase
-  function loadData(){
-    const date = dateEl.value;
-    if (!date) return alert('કૃપા કરીને તારીખ પસંદ કરો!');
-
-    firebase.database().ref('stockData/' + date).once('value')
-      .then(snapshot => {
-        const data = snapshot.val();
-        if (!data) return alert('❌ આ તારીખ માટે ડેટા નથી!');
-
-        const rows = rowsSelector();
-        data.forEach((item, i) => {
-          if (!rows[i]) return;
-          rows[i].children[0].querySelector('input').value = item.stock;
-          rows[i].children[2].querySelector('input').value = item.auto;
-        });
-        updateTotals();
-        alert('📂 ડેટા લોડ થઈ ગયું!');
-      })
-      .catch(err => {
-        alert('Load failed: ' + err.message);
-      });
-  }
-
-  // WhatsApp share (includes totals)
-  function shareWhatsApp(){
-    const date = dateEl.value || 'N/A';
-    let msg = `📦 Auto Daily Stock Sheet (${date})\n\n`;
-    msg += `Stock | Item | Auto\n`;
-    msg += `---------------------------\n`;
-
-    let ts = 0, ta = 0;
-    rowsSelector().forEach(row => {
-      if (row.style.display === 'none') return;
-      const stock = parseFloat(
-        row.children[0].querySelector('input').value
-      ) || 0;
-      const item  = row.children[1].innerText.trim();
-      const auto  = parseFloat(
-        row.children[2].querySelector('input').value
-      ) || 0;
-      ts += stock;
-      ta += auto;
-      msg += `${stock} | ${item} | ${auto}\n`;
-    });
-
-    msg += `---------------------------\n`;
-    msg += `Total: ${ts} | કુલ | ${ta}\n`;
-
-    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
-  }
-  </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cold Drink Stock Sheet</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg,#f2f6ff,#e9f9ff);
-      color: #111827;
-    }
-    .app {
-      max-width: 520px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-    .card {
-      background: #ffffff;
-      border-radius: 18px;
-      padding: 16px 16px 20px;
-      box-shadow: 0 12px 30px rgba(15,23,42,0.12);
-      overflow: hidden;
-    }
-    .card-header {
-      background: linear-gradient(135deg,#2563eb,#22c55e);
-      margin: -16px -16px 16px;
-      padding: 14px 16px 12px;
-      color: #f9fafb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .card-header h1 {
-      font-size: 18px;
-      margin: 0;
-      font-weight: 700;
-    }
-    .badge {
-      padding: 2px 9px;
-      border-radius: 999px;
-      background: rgba(15,23,42,0.25);
-      font-size: 11px;
-    }
-    .date-row {
-      display: flex;
-      justify-content: flex-end;
-      font-weight: 600;
-      margin-bottom: 8px;
-      font-size: 13px;
-      color: #4b5563;
-    }
-    .date-row input {
-      border: 1px solid #d1d5db;
-      border-radius: 999px;
-      padding: 4px 10px;
-      font-size: 13px;
-      width: 120px;
-      text-align: center;
-      background: #f9fafb;
-    }
-    .section-title {
-      font-weight: 700;
-      margin: 14px 0 6px;
-      padding-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #111827;
-    }
-    .section-title span.tag {
-      font-size: 11px;
-      padding: 1px 7px;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
-    }
-    .divider {
-      height: 1px;
-      background: linear-gradient(to right,#e5e7eb,transparent);
-      margin-bottom: 2px;
-    }
-    .row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 0;
-      font-size: 14px;
-    }
-    .row label {
-      flex: 1;
-      color: #111827;
-    }
-    .row span.size {
-      width: 56px;
-      text-align: right;
-      margin-right: 6px;
-      color: #6b7280;
-      font-size: 12px;
-    }
-    .row input[type="number"] {
-      width: 74px;
-      padding: 4px 6px;
-      border-radius: 10px;
-      border: 1px solid #d1d5db;
-      text-align: right;
-      font-size: 14px;
-      background: #f9fafb;
-      outline: none;
-      transition: box-shadow .12s, border-color .12s, background .12s;
-    }
-    .row input[type="number"]:focus {
-      border-color: #2563eb;
-      box-shadow: 0 0 0 1px rgba(37,99,235,0.3);
-      background: #ffffff;
-    }
-
-    .totals-wrap {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px dashed #e5e7eb;
-      display: grid;
-      grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: 8px;
-      font-size: 13px;
-    }
-    .total-box {
-      border-radius: 14px;
-      padding: 8px 10px;
-      background: #f3f4ff;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .total-box:nth-child(2){
-      background: #ecfdf3;
-    }
-    .total-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .06em;
-      color: #6b7280;
-    }
-    .total-value {
-      font-size: 16px;
-      font-weight: 700;
-      color: #111827;
-    }
-
-    .btn-bar {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-    }
-    button {
-      flex: 1;
-      padding: 10px 6px;
-      border-radius: 999px;
-      border: none;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.12s, opacity 0.1s;
-      box-shadow: 0 6px 16px rgba(15,23,42,0.18);
-      color: #f9fafb;
-    }
-    button:active {
-      transform: translateY(1px);
-      box-shadow: 0 2px 6px rgba(15,23,42,0.12);
-      opacity: 0.9;
-    }
-    .btn-save   { background:#16a34a; }
-    .btn-load   { background:#2563eb; }
-    .btn-share  { background:#22c55e; }
-
-    .status {
-      margin-top: 8px;
-      font-size: 12px;
-      min-height: 18px;
-    }
-    .status.ok { color:#16a34a; }
-    .status.err { color:#dc2626; }
-  </style>
-</head>
-<body>
-  <div class="app">
-    <div class="card">
-      <div class="card-header">
-        <h1>Cold Drink Stock</h1>
-        <div class="badge">Daily Sheet</div>
-      </div>
-
-      <div class="date-row">
-        Date&nbsp;
-        <input id="dateDisplay" type="text" />
-      </div>
-
-      <!-- 250 ml -->
-      <div class="section-title">250 ml <span class="tag">Small</span></div>
-      <div class="divider"></div>
-      <div class="row"><label>Thumup</label><span class="size">250</span><input type="number" id="qty_250_thumup" min="0"></div>
-      <div class="row"><label>Sprit</label><span class="size">250</span><input type="number" id="qty_250_sprit" min="0"></div>
-      <div class="row"><label>Maza</label><span class="size">250</span><input type="number" id="qty_250_maza" min="0"></div>
-      <div class="row"><label>Fanta</label><span class="size">250</span><input type="number" id="qty_250_fanta" min="0"></div>
-      <div class="row"><label>Cocacola</label><span class="size">250</span><input type="number" id="qty_250_cocacola" min="0"></div>
-      <div class="row"><label>Palpyorange</label><span class="size">250</span><input type="number" id="qty_250_palpy" min="0"></div>
-      <div class="row"><label>Charge</label><span class="size">250</span><input type="number" id="qty_250_charge" min="0"></div>
-      <div class="row"><label>Soda</label><span class="size">250</span><input type="number" id="qty_250_soda" min="0"></div>
-      <div class="row"><label>Maazaa</label><span class="size">250</span><input type="number" id="qty_250_maazaa" min="0"></div>
-
-      <!-- 750 ml -->
-      <div class="section-title">750 ml <span class="tag">Medium</span></div>
-      <div class="divider"></div>
-      <div class="row"><label>Thumup</label><span class="size">750</span><input type="number" id="qty_750_thumup" min="0"></div>
-      <div class="row"><label>Sprit</label><span class="size">750</span><input type="number" id="qty_750_sprit" min="0"></div>
-      <div class="row"><label>Fanta</label><span class="size">750</span><input type="number" id="qty_750_fanta" min="0"></div>
-      <div class="row"><label>Soda</label><span class="size">750</span><input type="number" id="qty_750_soda" min="0"></div>
-
-      <!-- 1 L -->
-      <div class="section-title">1 Liter <span class="tag">Family</span></div>
-      <div class="divider"></div>
-      <div class="row"><label>Thumup</label><span class="size">1L</span><input type="number" id="qty_1_thumup" min="0"></div>
-      <div class="row"><label>Sprit</label><span class="size">1L</span><input type="number" id="qty_1_sprit" min="0"></div>
-      <div class="row"><label>Fanta</label><span class="size">1L</span><input type="number" id="qty_1_fanta" min="0"></div>
-      <div class="row"><label>Maza</label><span class="size">1L</span><input type="number" id="qty_1_maza" min="0"></div>
-
-      <!-- 2.25 L -->
-      <div class="section-title">2.25 Liter <span class="tag">Party</span></div>
-      <div class="divider"></div>
-      <div class="row"><label>Thumup</label><span class="size">2.25L</span><input type="number" id="qty_225_thumup" min="0"></div>
-      <div class="row"><label>Sprit</label><span class="size">2.25L</span><input type="number" id="qty_225_sprit" min="0"></div>
-      <div class="row"><label>Fanta</label><span class="size">2.25L</span><input type="number" id="qty_225_fanta" min="0"></div>
-
-      <!-- Water + totals -->
-      <div class="section-title">Water & Summary</div>
-      <div class="divider"></div>
-      <div class="row">
-        <label>Whoter 1 Liter</label>
-        <span class="size">1L</span>
-        <input type="number" id="qty_water_1l" min="0">
-      </div>
-
-      <div class="totals-wrap">
-        <div class="total-box">
-          <div class="total-label">Total Bottle</div>
-          <div class="total-value" id="totalBottle">0</div>
-        </div>
-        <div class="total-box">
-          <div class="total-label">Total Liter</div>
-          <div class="total-value" id="totalLiter">0</div>
-        </div>
-      </div>
-
-      <!-- Buttons -->
-      <div class="btn-bar">
-        <button class="btn-save"   id="btnSave">Save</button>
-        <button class="btn-load"   id="btnLoad">Load</button>
-        <button class="btn-share"  id="btnShare">WhatsApp</button>
-      </div>
-      <div class="status" id="status"></div>
-    </div>
-  </div>
-
-  <script>
-    // ==== CONFIG ====
-    const DB_URL = "https://booking-e751e-default-rtdb.firebaseio.com/";
-
-    const FIELDS = [
-      {id:"qty_250_thumup",  label:"Thumup 250ml",  size:0.25},
-      {id:"qty_250_sprit",   label:"Sprit 250ml",   size:0.25},
-      {id:"qty_250_maza",    label:"Maza 250ml",    size:0.25},
-      {id:"qty_250_fanta",   label:"Fanta 250ml",   size:0.25},
-      {id:"qty_250_cocacola",label:"Cocacola 250ml",size:0.25},
-      {id:"qty_250_palpy",   label:"Palpyorange 250ml",size:0.25},
-      {id:"qty_250_charge",  label:"Charge 250ml",  size:0.25},
-      {id:"qty_250_soda",    label:"Soda 250ml",    size:0.25},
-      {id:"qty_250_maazaa",  label:"Maazaa 250ml",  size:0.25},
-
-      {id:"qty_750_thumup",  label:"Thumup 750ml",  size:0.75},
-      {id:"qty_750_sprit",   label:"Sprit 750ml",   size:0.75},
-      {id:"qty_750_fanta",   label:"Fanta 750ml",   size:0.75},
-      {id:"qty_750_soda",    label:"Soda 750ml",    size:0.75},
-
-      {id:"qty_1_thumup",    label:"Thumup 1L",     size:1},
-      {id:"qty_1_sprit",     label:"Sprit 1L",      size:1},
-      {id:"qty_1_fanta",     label:"Fanta 1L",      size:1},
-      {id:"qty_1_maza",      label:"Maza 1L",       size:1},
-
-      {id:"qty_225_thumup",  label:"Thumup 2.25L",  size:2.25},
-      {id:"qty_225_sprit",   label:"Sprit 2.25L",   size:2.25},
-      {id:"qty_225_fanta",   label:"Fanta 2.25L",   size:2.25},
-
-      {id:"qty_water_1l",    label:"Water 1L",      size:1}
-    ];
-
-    const statusEl  = document.getElementById("status");
-    const totalEl   = document.getElementById("totalLiter");
-    const totalBotEl= document.getElementById("totalBottle");
-
-    function showStatus(msg, ok=true){
-      statusEl.textContent = msg;
-      statusEl.className   = "status " + (ok ? "ok" : "err");
-    }
-
-    function todayDisplayString(){
-      const d = new Date();
-      const dd = String(d.getDate()).padStart(2,"0");
-      const mm = String(d.getMonth()+1).padStart(2,"0");
-      const yyyy = d.getFullYear();
-      return `${dd}/${mm}/${yyyy}`;
-    }
-
-    function dateKey(){
-      const val = document.getElementById("dateDisplay").value.trim();
-      const parts = val.split("/");
-      if(parts.length === 3){
-        return `${parts[2]}-${parts[1]}-${parts[0]}`; // yyyy-mm-dd
+    // ====== Utility: today date set ======
+    function setToday(id) {
+      const el = document.getElementById(id);
+      if (!el.value) {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        el.value = `${yyyy}-${mm}-${dd}`;
       }
-      return val.replace(/[^\d\-]/g,"");
     }
+    setToday("milkDate");
+    setToday("coldDate");
 
-    function recalcTotals(){
-      let totalLiter = 0;
+    // BOTH dates same રાખવી
+    const milkDateEl = document.getElementById("milkDate");
+    const coldDateEl = document.getElementById("coldDate");
+    milkDateEl.addEventListener("change", () => (coldDateEl.value = milkDateEl.value));
+    coldDateEl.addEventListener("change", () => (milkDateEl.value = coldDateEl.value));
+
+    // ====== MILK: totals & search ======
+    function recalcMilkTotals() {
+      let totalStock = 0;
+      let totalAuto = 0;
+      document.querySelectorAll("#milkTable tbody tr").forEach((row) => {
+        const stock = parseFloat(row.querySelector(".milk-stock").value) || 0;
+        const auto = parseFloat(row.querySelector(".milk-auto").value) || 0;
+        totalStock += stock;
+        totalAuto += auto;
+      });
+      document.getElementById("milkTotalStock").textContent = totalStock.toFixed(2);
+      document.getElementById("milkTotalAuto").textContent = totalAuto.toFixed(2);
+    }
+    document.querySelectorAll(".milk-stock, .milk-auto").forEach((inp) => {
+      inp.addEventListener("input", recalcMilkTotals);
+    });
+    recalcMilkTotals();
+
+    document.getElementById("milkSearch").addEventListener("input", (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      document.querySelectorAll("#milkTable tbody tr").forEach((row) => {
+        const itemVal =
+          row.querySelector(".milk-item").value.toLowerCase() || "";
+        row.style.display = term && !itemVal.includes(term) ? "none" : "";
+      });
+    });
+
+    // ====== COLD: totals ======
+    function recalcColdTotals() {
       let totalBottle = 0;
-      FIELDS.forEach(f=>{
-        const el = document.getElementById(f.id);
-        const qty = parseFloat(el.value || "0");
-        if(!isNaN(qty)){
-          totalLiter += qty * f.size;
-          totalBottle += qty;
-        }
+      let totalLiter = 0;
+      document.querySelectorAll(".cold-row").forEach((row) => {
+        const ml = parseFloat(row.dataset.ml) || 0;
+        const qty = parseFloat(row.querySelector(".cold-qty").value) || 0;
+        totalBottle += qty;
+        totalLiter += (qty * ml) / 1000;
       });
-      totalEl.textContent    = totalLiter.toFixed(2);
-      totalBotEl.textContent = totalBottle.toString();
+      document.getElementById("coldTotalBottle").textContent =
+        totalBottle.toFixed(0);
+      document.getElementById("coldTotalLiter").textContent =
+        totalLiter.toFixed(2);
+    }
+    document.querySelectorAll(".cold-qty").forEach((inp) => {
+      inp.addEventListener("input", recalcColdTotals);
+    });
+    recalcColdTotals();
+
+    // ====== COLLECT & FILL DATA ======
+    function collectPageData() {
+      const milkRows = Array.from(
+        document.querySelectorAll("#milkTable tbody tr")
+      ).map((row) => ({
+        stock: row.querySelector(".milk-stock").value || "",
+        item: row.querySelector(".milk-item").value || "",
+        auto: row.querySelector(".milk-auto").value || "",
+      }));
+
+      const coldRows = Array.from(document.querySelectorAll(".cold-row")).map(
+        (row) => ({
+          group: row.dataset.group,
+          brand: row.querySelector(".cold-brand").textContent.trim(),
+          ml: parseFloat(row.dataset.ml) || 0,
+          qty: row.querySelector(".cold-qty").value || "",
+        })
+      );
+
+      return {
+        milk: {
+          date: milkDateEl.value,
+          rows: milkRows,
+          totalStock: document.getElementById("milkTotalStock").textContent,
+          totalAuto: document.getElementById("milkTotalAuto").textContent,
+        },
+        cold: {
+          date: coldDateEl.value,
+          rows: coldRows,
+          totalBottle: document.getElementById("coldTotalBottle").textContent,
+          totalLiter: document.getElementById("coldTotalLiter").textContent,
+        },
+      };
     }
 
-    function getFormData(){
-      const obj = {};
-      FIELDS.forEach(f=>{
-        const el = document.getElementById(f.id);
-        obj[f.id] = Number(el.value || 0);
-      });
-      obj.dateDisplay = document.getElementById("dateDisplay").value;
-      obj.totalLiter  = totalEl.textContent;
-      obj.totalBottle = totalBotEl.textContent;
-      return obj;
-    }
-
-    function setFormData(data){
-      if(!data) return;
-      FIELDS.forEach(f=>{
-        if(typeof data[f.id] !== "undefined" && data[f.id] !== null){
-          const v = Number(data[f.id]) || 0;
-          document.getElementById(f.id).value = v === 0 ? "" : v;
-        } else {
-          document.getElementById(f.id).value = "";
-        }
-      });
-      if(data.dateDisplay){
-        document.getElementById("dateDisplay").value = data.dateDisplay;
-      }
-      recalcTotals();
-    }
-
-    async function saveData(){
-      try{
-        const key = dateKey();
-        const body = getFormData();
-        const res = await fetch(`${DB_URL}softdrink/${key}.json`, {
-          method:"PUT",
-          headers: {"Content-Type":"application/json"},
-          body: JSON.stringify(body)
+    function fillPageFromData(data) {
+      if (data.milk && data.milk.rows) {
+        const rows = document.querySelectorAll("#milkTable tbody tr");
+        rows.forEach((row, idx) => {
+          const d = data.milk.rows[idx] || {};
+          row.querySelector(".milk-stock").value = d.stock || "";
+          row.querySelector(".milk-item").value = d.item || "";
+          row.querySelector(".milk-auto").value = d.auto || "";
         });
-        if(!res.ok) throw new Error("HTTP " + res.status);
-        showStatus("Saved successfully.");
-      }catch(e){
-        console.error(e);
-        showStatus("Save error: " + e.message, false);
+      }
+      if (data.cold && data.cold.rows) {
+        const coldRows = document.querySelectorAll(".cold-row");
+        coldRows.forEach((row, idx) => {
+          const d = data.cold.rows[idx] || {};
+          row.querySelector(".cold-qty").value = d.qty || "";
+        });
+      }
+      recalcMilkTotals();
+      recalcColdTotals();
+    }
+
+    // ====== Firebase SAVE / LOAD ======
+    async function saveToFirebase() {
+      const dateKey = milkDateEl.value;
+      if (!dateKey) {
+        alert("પહેલાં તારીખ પસંદ કરો.");
+        return;
+      }
+      const payload = collectPageData();
+      try {
+        const url = `${FIREBASE_BASE}/${dateKey}.json`;
+        const res = await fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Firebase error");
+        document.getElementById("noDataMsg").textContent = "Saved ✅";
+        setTimeout(() => {
+          document.getElementById("noDataMsg").textContent =
+            "No data found for this date.";
+        }, 2000);
+      } catch (err) {
+        console.error(err);
+        alert("Save error ❌\nInternet / Firebase URL તપાસો.");
       }
     }
 
-    async function loadData(){
-      try{
-        const key = dateKey();
-        const res = await fetch(`${DB_URL}softdrink/${key}.json`);
-        if(!res.ok) throw new Error("HTTP " + res.status);
+    async function loadFromFirebase() {
+      const dateKey = milkDateEl.value;
+      if (!dateKey) {
+        alert("પહેલાં તારીખ પસંદ કરો.");
+        return;
+      }
+      try {
+        const url = `${FIREBASE_BASE}/${dateKey}.json`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Firebase error");
         const data = await res.json();
-        if(!data){
-          showStatus("No data found for this date.", false);
+        if (!data) {
+          document.getElementById("noDataMsg").textContent =
+            "No data found for this date.";
+          fillPageFromData({ milk: { rows: [] }, cold: { rows: [] } });
           return;
         }
-        setFormData(data);
-        showStatus("Loaded successfully.");
-      }catch(e){
-        console.error(e);
-        showStatus("Load error: " + e.message, false);
+        fillPageFromData(data);
+        document.getElementById("noDataMsg").textContent =
+          "Data loaded ✅";
+        setTimeout(() => {
+          document.getElementById("noDataMsg").textContent =
+            "No data found for this date.";
+        }, 2000);
+      } catch (err) {
+        console.error(err);
+        alert("Load error ❌");
       }
     }
 
-    function shareWhatsApp(){
-      const data = getFormData();
-      let lines = [];
-      lines.push("Date: " + data.dateDisplay);
-      lines.push("Cold Drink Stock");
-      lines.push("------------------");
-      FIELDS.forEach(f=>{
-        const qty = data[f.id] || 0;
-        if(qty > 0){
-          lines.push(`${f.label}: ${qty}`);
+    // ====== WhatsApp ======
+    function buildWhatsAppMessage() {
+      const date = milkDateEl.value || "";
+      const data = collectPageData();
+      const lines = [];
+
+      lines.push(`📦 Auto Daily Stock Sheet (${date})`);
+      data.milk.rows.forEach((r) => {
+        if ((r.stock || r.auto) && r.item) {
+          lines.push(
+            `${r.item}  Stock: ${r.stock || 0}  Auto: ${r.auto || 0}`
+          );
         }
       });
-      lines.push("------------------");
-      lines.push("Total Bottle: " + data.totalBottle);
-      lines.push("Total Liter: " + data.totalLiter);
+      lines.push("");
+      lines.push(
+        `કુલ Stock: ${data.milk.totalStock}  |  કુલ Auto: ${data.milk.totalAuto}`
+      );
+      lines.push("");
+      lines.push(`🥤 Cold Drink Stock (${date})`);
+      data.cold.rows.forEach((r) => {
+        if (r.qty) {
+          lines.push(
+            `${r.brand} ${r.ml}ml  Qty: ${r.qty}`
+          );
+        }
+      });
+      lines.push("");
+      lines.push(
+        `Total Bottle: ${data.cold.totalBottle}  |  Total Liter: ${data.cold.totalLiter}`
+      );
 
-      const text = lines.join("\n");
-      const url = "https://wa.me/?text=" + encodeURIComponent(text);
+      return encodeURIComponent(lines.join("\n"));
+    }
+
+    function openWhatsApp() {
+      const msg = buildWhatsAppMessage();
+      const url = `https://wa.me/?text=${msg}`;
       window.open(url, "_blank");
     }
 
-    document.getElementById("btnSave").addEventListener("click", saveData);
-    document.getElementById("btnLoad").addEventListener("click", loadData);
-    document.getElementById("btnShare").addEventListener("click", shareWhatsApp);
-    FIELDS.forEach(f=>{
-      document.getElementById(f.id).addEventListener("input", recalcTotals);
-    });
-
-    document.getElementById("dateDisplay").value = todayDisplayString();
-    recalcTotals();
+    // ====== Button wiring ======
+    document.getElementById("btnSaveTop").addEventListener("click", saveToFirebase);
+    document.getElementById("btnSaveBottom").addEventListener("click", saveToFirebase);
+    document.getElementById("btnLoadTop").addEventListener("click", loadFromFirebase);
+    document.getElementById("btnLoadBottom").addEventListener("click", loadFromFirebase);
+    document.getElementById("btnWATop").addEventListener("click", openWhatsApp);
+    document.getElementById("btnWABottom").addEventListener("click", openWhatsApp);
   </script>
 </body>
 </html>
