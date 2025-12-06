@@ -1,3 +1,4 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/>
 <!doctype html>
 <html lang="gu">
 <head>
@@ -181,7 +182,6 @@
       width: 100%;
     }
 
-    /* 🔒 Milk item label (not editable) */
     .milk-item {
       width: 100%;
       padding: 7px 8px;
@@ -246,7 +246,20 @@
       box-shadow: 0 6px 12px rgba(34, 197, 94, 0.4);
     }
 
-    /* Cold drink layout */
+    /* Bill No box */
+    .bill-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .bill-wrapper input {
+      width: 110px;
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      background: #f9fafb;
+      font-size: 12px;
+    }
 
     .cold-group-title {
       font-size: 13px;
@@ -373,7 +386,6 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Item column હવે lock છે -->
         <tr>
           <td><input type="number" class="milk-stock" min="0" step="0.01"></td>
           <td><div class="milk-item">લીટર</div></td>
@@ -418,7 +430,7 @@
       <button class="btn green" id="btnWATop">🟢 WhatsApp</button>
     </div>
 
-    <div class="hint">Note: ઉપર Save / Load બંને સેકશન (Milk + Cold Drink) એકસાથે Save થશે.</div>
+    <div class="hint">Milk Save / Load ફક્ત ઉપરના Milk section માટે છે.</div>
   </section>
 
   <!-- ========== BOTTOM: COLD DRINK STOCK ========== -->
@@ -428,7 +440,12 @@
         <span class="emoji">🥤</span>
         <h2>Cold Drink Stock</h2>
       </div>
-      <div class="badge">Daily Sheet</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="badge">Daily Sheet</div>
+        <div class="bill-wrapper">
+          <input type="text" id="billNo" placeholder="Bill No">
+        </div>
+      </div>
     </div>
 
     <div class="sub-row">
@@ -438,8 +455,7 @@
       </div>
     </div>
 
-    <!-- Cold drink rows (unchanged) -->
-    <!-- 250 ml Small -->
+    <!-- Cold drink rows -->
     <div class="cold-group">
       <div class="cold-group-title">250 ml <span class="sub">Small</span></div>
       <div class="cold-row" data-ml="250" data-group="250-small">
@@ -482,14 +498,13 @@
         <div class="cold-ml">250</div>
         <input class="cold-qty" type="number" min="0" step="1">
       </div>
-      <div class="cold-row" data-ml="250" data-group="250-small">
+      <div class="cold-row" data-ml="140" data-group="250-small">
         <div class="cold-brand">Maaza</div>
         <div class="cold-ml">140</div>
         <input class="cold-qty" type="number" min="0" step="1">
       </div>
     </div>
 
-    <!-- 750 ml Medium -->
     <div class="cold-group">
       <div class="cold-group-title">750 ml <span class="sub">Medium</span></div>
       <div class="cold-row" data-ml="750" data-group="750-medium">
@@ -514,7 +529,6 @@
       </div>
     </div>
 
-    <!-- 1 Liter Family -->
     <div class="cold-group">
       <div class="cold-group-title">1 Liter <span class="sub">Family</span></div>
       <div class="cold-row" data-ml="1000" data-group="1l-family">
@@ -539,7 +553,6 @@
       </div>
     </div>
 
-    <!-- 2.25 Liter Party -->
     <div class="cold-group">
       <div class="cold-group-title">2.25 Liter <span class="sub">Party</span></div>
       <div class="cold-row" data-ml="2250" data-group="2_25-party">
@@ -559,7 +572,6 @@
       </div>
     </div>
 
-    <!-- Water -->
     <div class="cold-group">
       <div class="cold-group-title">Water & Summary</div>
       <div class="cold-row" data-ml="1000" data-group="water">
@@ -586,35 +598,35 @@
       <button class="btn green" id="btnWABottom">🟢 WhatsApp</button>
     </div>
 
-    <div class="no-data" id="noDataMsg">No data found for this date.</div>
+    <div class="no-data" id="noDataMsg">No data found.</div>
   </section>
 
   <script>
-    // 🔗 Firebase base URL
-    const FIREBASE_BASE =
-      "https://booking-e751e-default-rtdb.firebaseio.com/dailyStock";
+    // ===== Firebase base URLs (અલગ-અલગ) =====
+    const FIREBASE_MILK_BASE =
+      "https://booking-e751e-default-rtdb.firebaseio.com/dailyStockMilk";
+    const FIREBASE_COLD_BASE =
+      "https://booking-e751e-default-rtdb.firebaseio.com/dailyStockCold";
 
-    // ====== Utility: today date set ======
+    // ===== Date default =====
     function setToday(id) {
       const el = document.getElementById(id);
       if (!el.value) {
         const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const dd = String(today.getDate()).padStart(2, "0");
-        el.value = `${yyyy}-${mm}-${dd}`;
+        el.value = today.toISOString().split("T")[0];
       }
     }
     setToday("milkDate");
     setToday("coldDate");
 
-    // BOTH dates same રાખવી
     const milkDateEl = document.getElementById("milkDate");
     const coldDateEl = document.getElementById("coldDate");
+
+    // બંને date same રાખવા હોય તો uncomment કરો
     milkDateEl.addEventListener("change", () => (coldDateEl.value = milkDateEl.value));
     coldDateEl.addEventListener("change", () => (milkDateEl.value = coldDateEl.value));
 
-    // ====== MILK: totals & search ======
+    // ===== MILK TOTALS =====
     function recalcMilkTotals() {
       let totalStock = 0;
       let totalAuto = 0;
@@ -632,6 +644,7 @@
     });
     recalcMilkTotals();
 
+    // MILK search
     document.getElementById("milkSearch").addEventListener("input", (e) => {
       const term = e.target.value.toLowerCase().trim();
       document.querySelectorAll("#milkTable tbody tr").forEach((row) => {
@@ -641,7 +654,7 @@
       });
     });
 
-    // ====== COLD: totals ======
+    // ===== COLD TOTALS =====
     function recalcColdTotals() {
       let totalBottle = 0;
       let totalLiter = 0;
@@ -661,8 +674,8 @@
     });
     recalcColdTotals();
 
-    // ====== COLLECT & FILL DATA ======
-    function collectPageData() {
+    // ===== MILK DATA helpers =====
+    function collectMilkData() {
       const milkRows = Array.from(
         document.querySelectorAll("#milkTable tbody tr")
       ).map((row) => ({
@@ -670,7 +683,28 @@
         item: row.querySelector(".milk-item").textContent.trim() || "",
         auto: row.querySelector(".milk-auto").value || "",
       }));
+      return {
+        date: milkDateEl.value,
+        rows: milkRows,
+        totalStock: document.getElementById("milkTotalStock").textContent,
+        totalAuto: document.getElementById("milkTotalAuto").textContent,
+      };
+    }
 
+    function fillMilkFromData(milk) {
+      if (!milk || !milk.rows) return;
+      const rows = document.querySelectorAll("#milkTable tbody tr");
+      rows.forEach((row, idx) => {
+        const d = milk.rows[idx] || {};
+        row.querySelector(".milk-stock").value = d.stock || "";
+        row.querySelector(".milk-auto").value = d.auto || "";
+      });
+      milkDateEl.value = milk.date || milkDateEl.value;
+      recalcMilkTotals();
+    }
+
+    // ===== COLD DATA helpers =====
+    function collectColdData() {
       const coldRows = Array.from(document.querySelectorAll(".cold-row")).map(
         (row) => ({
           group: row.dataset.group,
@@ -679,149 +713,196 @@
           qty: row.querySelector(".cold-qty").value || "",
         })
       );
-
       return {
-        milk: {
-          date: milkDateEl.value,
-          rows: milkRows,
-          totalStock: document.getElementById("milkTotalStock").textContent,
-          totalAuto: document.getElementById("milkTotalAuto").textContent,
-        },
-        cold: {
-          date: coldDateEl.value,
-          rows: coldRows,
-          totalBottle: document.getElementById("coldTotalBottle").textContent,
-          totalLiter: document.getElementById("coldTotalLiter").textContent,
-        },
+        billNo: document.getElementById("billNo").value.trim(),
+        date: coldDateEl.value,
+        rows: coldRows,
+        totalBottle: document.getElementById("coldTotalBottle").textContent,
+        totalLiter: document.getElementById("coldTotalLiter").textContent,
       };
     }
 
-    function fillPageFromData(data) {
-      if (data.milk && data.milk.rows) {
-        const rows = document.querySelectorAll("#milkTable tbody tr");
-        rows.forEach((row, idx) => {
-          const d = data.milk.rows[idx] || {};
-          row.querySelector(".milk-stock").value = d.stock || "";
-          row.querySelector(".milk-auto").value = d.auto || "";
-          // item label fix છે, બદલતા નથી
-        });
-      }
-      if (data.cold && data.cold.rows) {
-        const coldRows = document.querySelectorAll(".cold-row");
-        coldRows.forEach((row, idx) => {
-          const d = data.cold.rows[idx] || {};
-          row.querySelector(".cold-qty").value = d.qty || "";
-        });
-      }
-      recalcMilkTotals();
+    function fillColdFromData(cold) {
+      if (!cold || !cold.rows) return;
+      const coldRows = document.querySelectorAll(".cold-row");
+      coldRows.forEach((row, idx) => {
+        const d = cold.rows[idx] || {};
+        row.querySelector(".cold-qty").value = d.qty || "";
+      });
+      coldDateEl.value = cold.date || coldDateEl.value;
       recalcColdTotals();
     }
 
-    // ====== Firebase SAVE / LOAD ======
-    async function saveToFirebase() {
+    // ===== SAVE / LOAD – MILK (DATE KEY) =====
+    async function saveMilkToFirebase() {
       const dateKey = milkDateEl.value;
       if (!dateKey) {
-        alert("પહેલાં તારીખ પસંદ કરો.");
+        alert("પહેલાં Milk માટે તારીખ પસંદ કરો.");
         return;
       }
-      const payload = collectPageData();
+      const payload = collectMilkData();
       try {
-        const url = `${FIREBASE_BASE}/${dateKey}.json`;
+        const url = `${FIREBASE_MILK_BASE}/${dateKey}.json`;
         const res = await fetch(url, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
         if (!res.ok) throw new Error("Firebase error");
-        document.getElementById("noDataMsg").textContent = "Saved ✅";
+        document.getElementById("noDataMsg").textContent = "Milk Saved ✅";
         setTimeout(() => {
-          document.getElementById("noDataMsg").textContent =
-            "No data found for this date.";
+          document.getElementById("noDataMsg").textContent = "No data found.";
         }, 2000);
       } catch (err) {
         console.error(err);
-        alert("Save error ❌\nInternet / Firebase URL તપાસો.");
+        alert("Milk Save error ❌");
       }
     }
 
-    async function loadFromFirebase() {
+    async function loadMilkFromFirebase() {
       const dateKey = milkDateEl.value;
       if (!dateKey) {
-        alert("પહેલાં તારીખ પસંદ કરો.");
+        alert("પહેલાં Milk માટે તારીખ પસંદ કરો.");
         return;
       }
       try {
-        const url = `${FIREBASE_BASE}/${dateKey}.json`;
+        const url = `${FIREBASE_MILK_BASE}/${dateKey}.json`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("Firebase error");
         const data = await res.json();
         if (!data) {
-          document.getElementById("noDataMsg").textContent =
-            "No data found for this date.";
-          fillPageFromData({ milk: { rows: [] }, cold: { rows: [] } });
+          alert("આ તારીખ માટે Milk data નથી.");
           return;
         }
-        fillPageFromData(data);
-        document.getElementById("noDataMsg").textContent =
-          "Data loaded ✅";
+        fillMilkFromData(data);
+        document.getElementById("noDataMsg").textContent = "Milk Loaded ✅";
         setTimeout(() => {
-          document.getElementById("noDataMsg").textContent =
-            "No data found for this date.";
+          document.getElementById("noDataMsg").textContent = "No data found.";
         }, 2000);
       } catch (err) {
         console.error(err);
-        alert("Load error ❌");
+        alert("Milk Load error ❌");
       }
     }
 
-    // ====== WhatsApp ======
-    function buildWhatsAppMessage() {
-      const date = milkDateEl.value || "";
-      const data = collectPageData();
-      const lines = [];
-
-      lines.push(`📦 Auto Daily Stock Sheet (${date})`);
-      data.milk.rows.forEach((r) => {
-        if ((r.stock || r.auto) && r.item) {
-          lines.push(
-            `${r.item}  Stock: ${r.stock || 0}  Auto: ${r.auto || 0}`
-          );
-        }
-      });
-      lines.push("");
-      lines.push(
-        `કુલ Stock: ${data.milk.totalStock}  |  કુલ Auto: ${data.milk.totalAuto}`
-      );
-      lines.push("");
-      lines.push(`🥤 Cold Drink Stock (${date})`);
-      data.cold.rows.forEach((r) => {
-        if (r.qty) {
-          lines.push(
-            `${r.brand} ${r.ml}ml  Qty: ${r.qty}`
-          );
-        }
-      });
-      lines.push("");
-      lines.push(
-        `Total Bottle: ${data.cold.totalBottle}  |  Total Liter: ${data.cold.totalLiter}`
-      );
-
-      return encodeURIComponent(lines.join("\n"));
+    // ===== SAVE / LOAD – COLD (BILL NO KEY) =====
+    async function saveColdToFirebase() {
+      const coldData = collectColdData();
+      if (!coldData.billNo) {
+        alert("Cold Drink save માટે Bill No નાખો.");
+        return;
+      }
+      try {
+        const url = `${FIREBASE_COLD_BASE}/${coldData.billNo}.json`;
+        const res = await fetch(url, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(coldData),
+        });
+        if (!res.ok) throw new Error("Firebase error");
+        document.getElementById("noDataMsg").textContent = "Cold Saved ✅";
+        setTimeout(() => {
+          document.getElementById("noDataMsg").textContent = "No data found.";
+        }, 2000);
+      } catch (err) {
+        console.error(err);
+        alert("Cold Save error ❌");
+      }
     }
 
-    function openWhatsApp() {
-      const msg = buildWhatsAppMessage();
+    async function loadColdFromFirebase() {
+      const billNo = document.getElementById("billNo").value.trim();
+      if (!billNo) {
+        alert("Cold Drink load માટે Bill No નાખો.");
+        return;
+      }
+      try {
+        const url = `${FIREBASE_COLD_BASE}/${billNo}.json`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Firebase error");
+        const data = await res.json();
+        if (!data) {
+          alert("આ Bill No માટે data નથી.");
+          return;
+        }
+        fillColdFromData(data);
+        document.getElementById("noDataMsg").textContent = "Cold Loaded ✅";
+        setTimeout(() => {
+          document.getElementById("noDataMsg").textContent = "No data found.";
+        }, 2000);
+      } catch (err) {
+        console.error(err);
+        alert("Cold Load error ❌");
+      }
+    }
+
+    // ===== WhatsApp – ONLY MILK =====
+    function milkWhatsApp() {
+      const milk = collectMilkData();
+      const lines = [];
+
+      lines.push(`📦 Auto Daily Stock Sheet (${milk.date})`);
+      lines.push("Stock | Item | Auto");
+      lines.push("--------------------------------");
+      milk.rows.forEach((r) => {
+        const s = r.stock || "0";
+        const a = r.auto || "0";
+        lines.push(`${s} | ${r.item} | ${a}`);
+      });
+      lines.push("--------------------------------");
+      lines.push(`Total Stock: ${milk.totalStock}`);
+      lines.push(`Total Auto: ${milk.totalAuto}`);
+
+      const msg = encodeURIComponent(lines.join("\n"));
       const url = `https://wa.me/?text=${msg}`;
       window.open(url, "_blank");
     }
 
-    // ====== Button wiring ======
-    document.getElementById("btnSaveTop").addEventListener("click", saveToFirebase);
-    document.getElementById("btnSaveBottom").addEventListener("click", saveToFirebase);
-    document.getElementById("btnLoadTop").addEventListener("click", loadFromFirebase);
-    document.getElementById("btnLoadBottom").addEventListener("click", loadFromFirebase);
-    document.getElementById("btnWATop").addEventListener("click", openWhatsApp);
-    document.getElementById("btnWABottom").addEventListener("click", openWhatsApp);
+    // ===== WhatsApp – ONLY COLD DRINK =====
+    function coldWhatsApp() {
+      const cold = collectColdData();
+      const lines = [];
+
+      lines.push(`🥤 Cold Drink Stock`);
+      lines.push(`Bill No: ${cold.billNo || "N/A"}`);
+      lines.push(`Date: ${cold.date}`);
+      lines.push("");
+      lines.push("Brand | Size | Qty");
+      lines.push("--------------------------------");
+
+      cold.rows.forEach((r) => {
+        const q = parseFloat(r.qty) || 0;
+        if (!q) return;
+
+        let sizeLabel;
+        if (r.ml >= 1000) {
+          if (r.ml === 1000) sizeLabel = "1L";
+          else if (r.ml === 2250) sizeLabel = "2.25L";
+          else sizeLabel = (r.ml / 1000).toFixed(2) + "L";
+        } else {
+          sizeLabel = `${r.ml} ml`;
+        }
+        lines.push(`${r.brand} | ${sizeLabel} | ${q}`);
+      });
+
+      lines.push("--------------------------------");
+      lines.push(`Total Bottle: ${cold.totalBottle}`);
+      lines.push(`Total Liter: ${cold.totalLiter}`);
+
+      const msg = encodeURIComponent(lines.join("\n"));
+      const url = `https://wa.me/?text=${msg}`;
+      window.open(url, "_blank");
+    }
+
+    // ===== Button wiring =====
+    document.getElementById("btnSaveTop").addEventListener("click", saveMilkToFirebase);
+    document.getElementById("btnLoadTop").addEventListener("click", loadMilkFromFirebase);
+
+    document.getElementById("btnSaveBottom").addEventListener("click", saveColdToFirebase);
+    document.getElementById("btnLoadBottom").addEventListener("click", loadColdFromFirebase);
+
+    document.getElementById("btnWATop").addEventListener("click", milkWhatsApp);
+    document.getElementById("btnWABottom").addEventListener("click", coldWhatsApp);
   </script>
 </body>
-        </html>
+</html>
