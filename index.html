@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Labour Login | APMC</title>
+<title>Labour Register | APMC</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -15,23 +15,23 @@ body{
     align-items:center;
     justify-content:center;
 }
-.login-box{
+.register-box{
     background:#fff;
-    width:350px;
+    width:360px;
     padding:30px;
     border-radius:15px;
     box-shadow:0 15px 40px rgba(0,0,0,0.2);
     text-align:center;
 }
-.login-box img{
+.register-box img{
     width:80px;
     margin-bottom:10px;
 }
-.login-box h2{
+.register-box h2{
     color:#0f9d58;
     margin:5px 0;
 }
-.login-box p{
+.register-box p{
     font-size:14px;
     color:#666;
 }
@@ -53,7 +53,7 @@ body{
     border-color:#0f9d58;
     outline:none;
 }
-.login-btn{
+.register-btn{
     width:100%;
     padding:12px;
     background:#0f9d58;
@@ -63,8 +63,17 @@ body{
     font-size:16px;
     cursor:pointer;
 }
-.login-btn:hover{
+.register-btn:hover{
     background:#0b8043;
+}
+.extra{
+    margin-top:15px;
+    font-size:13px;
+}
+.extra a{
+    color:#0f9d58;
+    text-decoration:none;
+    font-weight:bold;
 }
 .footer{
     margin-top:15px;
@@ -76,10 +85,15 @@ body{
 
 <body>
 
-<div class="login-box">
+<div class="register-box">
     <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
-    <h2>Labour Login</h2>
+    <h2>Labour Register</h2>
     <p>APMC Junagadh</p>
+
+    <div class="input-box">
+        <label>Full Name</label>
+        <input type="text" id="name" placeholder="Enter full name">
+    </div>
 
     <div class="input-box">
         <label>Mobile Number</label>
@@ -88,20 +102,24 @@ body{
 
     <div class="input-box">
         <label>Password</label>
-        <input type="password" id="password" placeholder="Enter password">
+        <input type="password" id="password" placeholder="Create password">
     </div>
 
-    <button class="login-btn" onclick="login()">Login</button>
+    <button class="register-btn" onclick="register()">Register</button>
+
+    <div class="extra">
+        Already registered? <a href="login.html">Login</a>
+    </div>
 
     <div class="footer">
         © 2025 APMC Junagadh
     </div>
 </div>
 
-<!-- 🔥 Firebase Login Script -->
+<!-- 🔥 Firebase Register Script -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
   databaseURL: "https://apmc-6eb31-default-rtdb.asia-southeast1.firebasedatabase.app/"
@@ -110,12 +128,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-window.login = function () {
+window.register = function () {
+    let name = document.getElementById("name").value;
     let mobile = document.getElementById("mobile").value;
     let password = document.getElementById("password").value;
 
-    if(mobile=="" || password==""){
-        alert("Mobile & Password required");
+    if(name=="" || mobile=="" || password==""){
+        alert("All fields required");
         return;
     }
 
@@ -123,15 +142,16 @@ window.login = function () {
 
     get(userRef).then((snapshot)=>{
         if(snapshot.exists()){
-            let data = snapshot.val();
-            if(data.password === password){
-                alert("Login Successful ✅");
-                // window.location.href="dashboard.html";
-            }else{
-                alert("Wrong Password ❌");
-            }
+            alert("Mobile already registered ❌");
         }else{
-            alert("Labour Not Registered ❌");
+            set(userRef,{
+                name: name,
+                password: password,
+                status: "active"
+            }).then(()=>{
+                alert("Register Successful ✅");
+                window.location.href = "login.html";
+            });
         }
     });
 }
