@@ -1,142 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Login & Signup</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#141E30,#243B55);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  color:#fff;
-}
-.box{
-  width:340px;
-  background:#1e1e2f;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 0 25px rgba(0,0,0,.5);
-}
-h2{text-align:center;margin-bottom:15px;}
-input,button{
-  width:100%;
-  padding:10px;
-  margin:8px 0;
-  border-radius:8px;
-  border:none;
-  outline:none;
-}
-input{background:#2d2d44;color:#fff;}
-button{
-  background:#4CAF50;
-  color:#fff;
-  font-weight:bold;
-}
-.switch{
-  text-align:center;
-  margin-top:10px;
-  color:#00c3ff;
-  cursor:pointer;
-}
-.msg{text-align:center;margin-top:8px;color:#ff8080;}
-</style>
+  <title>Labour Login</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="box" id="loginBox">
-<h2>Login</h2>
-<input id="l_username" placeholder="Username">
-<input id="l_mobile" placeholder="Mobile">
-<input id="l_otp" placeholder="OTP">
-<button onclick="sendOTP('login')">Send OTP</button>
-<button onclick="verifyOTP('login')">Verify OTP</button>
-<input id="l_pass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<div class="switch" onclick="showSignup()">New User? Sign Up</div>
-<div class="msg" id="l_msg"></div>
+<header><h2>Labour OTP Login</h2></header>
+
+<div class="card">
+  <input id="phone" placeholder="+91XXXXXXXXXX">
+  <div id="recaptcha-container"></div>
+  <button onclick="sendOTP()">Send OTP</button>
+
+  <input id="otp" placeholder="Enter OTP">
+  <button onclick="verifyOTP()">Verify OTP</button>
 </div>
 
-<div class="box" id="signupBox" style="display:none">
-<h2>Sign Up</h2>
-<input id="s_name" placeholder="Name">
-<input id="s_mobile" placeholder="Mobile">
-<input id="s_otp" placeholder="OTP">
-<button onclick="sendOTP('signup')">Send OTP</button>
-<button onclick="verifyOTP('signup')">Verify OTP</button>
-<input id="s_pass" type="password" placeholder="Set Password">
-<button onclick="signup()">Create Account</button>
-<div class="switch" onclick="showLogin()">Already User? Login</div>
-<div class="msg" id="s_msg"></div>
-</div>
-
-<script>
-const dbURL = "https://sheet-787b2-default-rtdb.asia-southeast1.firebasedatabase.app/";
-let otpStore = {};
-
-function showSignup(){
-  loginBox.style.display="none";
-  signupBox.style.display="block";
-}
-function showLogin(){
-  signupBox.style.display="none";
-  loginBox.style.display="block";
-}
-
-function sendOTP(type){
-  const mobile = type==="login" ? l_mobile.value : s_mobile.value;
-  if(mobile.length<10){alert("Valid mobile required");return;}
-  const otp = Math.floor(1000+Math.random()*9000);
-  otpStore[mobile]=otp;
-  alert("OTP (Demo): "+otp);
-}
-
-function verifyOTP(type){
-  const mobile = type==="login" ? l_mobile.value : s_mobile.value;
-  const otp = type==="login" ? l_otp.value : s_otp.value;
-  if(otpStore[mobile]==otp){
-    alert("OTP Verified");
-  }else{
-    alert("Wrong OTP");
-  }
-}
-
-function signup(){
-  const name=s_name.value;
-  const mobile=s_mobile.value;
-  const pass=s_pass.value;
-
-  fetch(dbURL+"users/"+mobile+".json",{
-    method:"PUT",
-    body:JSON.stringify({name,mobile,pass})
-  }).then(()=>{
-    s_msg.innerText="Account Created";
-    showLogin();
-  });
-}
-
-function login(){
-  const mobile=l_mobile.value;
-  const pass=l_pass.value;
-
-  fetch(dbURL+"users/"+mobile+".json")
-  .then(r=>r.json())
-  .then(d=>{
-    if(d && d.pass===pass){
-      l_msg.style.color="lightgreen";
-      l_msg.innerText="Login Success";
-    }else{
-      l_msg.innerText="Invalid Login";
-    }
-  });
-}
-</script>
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Labour Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header><h2>Labour Dashboard</h2></header>
+
+<div class="card">
+  <input id="shop" placeholder="દુકાન નામ">
+  <input id="work" placeholder="કામ વિગત">
+  <button onclick="saveWork()">Save Work</button>
+</div>
+
+<div class="card">
+  <h3>મારા કામ</h3>
+  <ul id="list"></ul>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
+body { font-family: Arial; background:#f2f2f2; }
+header { background:#2e7d32; color:white; padding:10px; text-align:center; }
+.card { background:white; padding:15px; margin:20px; border-radius:8px; }
+input, button { width:100%; padding:10px; margin:5px 0; }
+button { background:#2e7d32; color:white; border:none; }
+// 🔴 PASTE YOUR FIREBASE CONFIG HERE
+const firebaseConfig = {
+  apiKey: "API_KEY",
+  authDomain: "PROJECT_ID.firebaseapp.com",
+  databaseURL: "https://PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "PROJECT_ID",
+};
+
+firebase.initializeApp(firebaseConfig);
+
+// 🔐 OTP LOGIN
+const auth = firebase.auth();
+window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
+  'recaptcha-container',
+  { size: 'normal' }
+);
+
+function sendOTP() {
+  const phone = document.getElementById("phone").value;
+  auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
+    .then((confirmationResult) => {
+      window.confirmationResult = confirmationResult;
+      alert("OTP Sent");
+    })
+    .catch(err => alert(err.message));
+}
+
+function verifyOTP() {
+  const otp = document.getElementById("otp").value;
+  window.confirmationResult.confirm(otp)
+    .then((result) => {
+      localStorage.setItem("uid", result.user.uid);
+      window.location.href = "labour.html";
+    })
+    .catch(() => alert("Wrong OTP"));
+}
+
+// 💾 SAVE WORK
+function saveWork() {
+  const uid = localStorage.getItem("uid");
+  const shop = document.getElementById("shop").value;
+  const work = document.getElementById("work").value;
+
+  firebase.database().ref("labours/" + uid).push({
+    shop: shop,
+    work: work,
+    time: Date.now()
+  });
+
+  alert("Work Saved");
+}
