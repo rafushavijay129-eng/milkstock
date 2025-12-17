@@ -1,106 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Labour Login</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Labour Login | APMC</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:linear-gradient(135deg,#0f9d58,#34a853);
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+.login-box{
+    background:#fff;
+    width:350px;
+    padding:30px;
+    border-radius:15px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.2);
+    text-align:center;
+}
+.login-box img{
+    width:80px;
+    margin-bottom:10px;
+}
+.login-box h2{
+    color:#0f9d58;
+    margin:5px 0;
+}
+.login-box p{
+    font-size:14px;
+    color:#666;
+}
+.input-box{
+    text-align:left;
+    margin-bottom:15px;
+}
+.input-box label{
+    font-size:13px;
+}
+.input-box input{
+    width:100%;
+    padding:12px;
+    border-radius:8px;
+    border:1px solid #ccc;
+    margin-top:5px;
+}
+.input-box input:focus{
+    border-color:#0f9d58;
+    outline:none;
+}
+.login-btn{
+    width:100%;
+    padding:12px;
+    background:#0f9d58;
+    color:#fff;
+    border:none;
+    border-radius:8px;
+    font-size:16px;
+    cursor:pointer;
+}
+.login-btn:hover{
+    background:#0b8043;
+}
+.footer{
+    margin-top:15px;
+    font-size:12px;
+    color:#999;
+}
+</style>
 </head>
+
 <body>
 
-<header><h2>Labour OTP Login</h2></header>
+<div class="login-box">
+    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
+    <h2>Labour Login</h2>
+    <p>APMC Junagadh</p>
 
-<div class="card">
-  <input id="phone" placeholder="+91XXXXXXXXXX">
-  <div id="recaptcha-container"></div>
-  <button onclick="sendOTP()">Send OTP</button>
+    <div class="input-box">
+        <label>Mobile Number</label>
+        <input type="number" id="mobile" placeholder="Enter mobile number">
+    </div>
 
-  <input id="otp" placeholder="Enter OTP">
-  <button onclick="verifyOTP()">Verify OTP</button>
+    <div class="input-box">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Enter password">
+    </div>
+
+    <button class="login-btn" onclick="login()">Login</button>
+
+    <div class="footer">
+        © 2025 APMC Junagadh
+    </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-<script src="script.js"></script>
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Labour Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+<!-- 🔥 Firebase Login Script -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-<header><h2>Labour Dashboard</h2></header>
-
-<div class="card">
-  <input id="shop" placeholder="દુકાન નામ">
-  <input id="work" placeholder="કામ વિગત">
-  <button onclick="saveWork()">Save Work</button>
-</div>
-
-<div class="card">
-  <h3>મારા કામ</h3>
-  <ul id="list"></ul>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="script.js"></script>
-</body>
-</html>
-body { font-family: Arial; background:#f2f2f2; }
-header { background:#2e7d32; color:white; padding:10px; text-align:center; }
-.card { background:white; padding:15px; margin:20px; border-radius:8px; }
-input, button { width:100%; padding:10px; margin:5px 0; }
-button { background:#2e7d32; color:white; border:none; }
-// 🔴 PASTE YOUR FIREBASE CONFIG HERE
 const firebaseConfig = {
-  apiKey: "API_KEY",
-  authDomain: "PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "PROJECT_ID",
+  databaseURL: "https://apmc-6eb31-default-rtdb.asia-southeast1.firebasedatabase.app/"
 };
 
-firebase.initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-// 🔐 OTP LOGIN
-const auth = firebase.auth();
-window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier(
-  'recaptcha-container',
-  { size: 'normal' }
-);
+window.login = function () {
+    let mobile = document.getElementById("mobile").value;
+    let password = document.getElementById("password").value;
 
-function sendOTP() {
-  const phone = document.getElementById("phone").value;
-  auth.signInWithPhoneNumber(phone, window.recaptchaVerifier)
-    .then((confirmationResult) => {
-      window.confirmationResult = confirmationResult;
-      alert("OTP Sent");
-    })
-    .catch(err => alert(err.message));
+    if(mobile=="" || password==""){
+        alert("Mobile & Password required");
+        return;
+    }
+
+    const userRef = ref(db, "labours/" + mobile);
+
+    get(userRef).then((snapshot)=>{
+        if(snapshot.exists()){
+            let data = snapshot.val();
+            if(data.password === password){
+                alert("Login Successful ✅");
+                // window.location.href="dashboard.html";
+            }else{
+                alert("Wrong Password ❌");
+            }
+        }else{
+            alert("Labour Not Registered ❌");
+        }
+    });
 }
+</script>
 
-function verifyOTP() {
-  const otp = document.getElementById("otp").value;
-  window.confirmationResult.confirm(otp)
-    .then((result) => {
-      localStorage.setItem("uid", result.user.uid);
-      window.location.href = "labour.html";
-    })
-    .catch(() => alert("Wrong OTP"));
-}
-
-// 💾 SAVE WORK
-function saveWork() {
-  const uid = localStorage.getItem("uid");
-  const shop = document.getElementById("shop").value;
-  const work = document.getElementById("work").value;
-
-  firebase.database().ref("labours/" + uid).push({
-    shop: shop,
-    work: work,
-    time: Date.now()
-  });
-
-  alert("Work Saved");
-}
+</body>
+</html>
