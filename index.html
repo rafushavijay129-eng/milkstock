@@ -121,6 +121,7 @@ input[type=number]{
 </div>
 
 <div class="body">
+
 <label>📅 તારીખ પસંદ કરો</label>
 <input type="date" id="date">
 
@@ -128,13 +129,15 @@ input[type=number]{
 
 <table id="tbl">
 <tr><th>Stock</th><th>Item</th><th>Auto</th></tr>
+
 <tr><td><input type="number" oninput="calc()" id="s_લીટર"></td><td>લીટર</td><td><input type="number" class="auto" id="a_લીટર" value="0"></td></tr>
 <tr><td><input type="number" oninput="calc()" id="s_તાજા"></td><td>તાજા</td><td><input type="number" class="auto" id="a_તાજા" value="0"></td></tr>
 <tr><td><input type="number" oninput="calc()" id="s_છાસ"></td><td>છાસ</td><td><input type="number" class="auto" id="a_છાસ" value="0"></td></tr>
-<tr><td><input type="number" oninput="calc()" id="s_ઠબુળા"></td><td>ઠબુળા</td><td><input type="number" class="auto" id="a_છાણા" value="0"></td></tr>
+<tr><td><input type="number" oninput="calc()" id="s_ઠબુળા"></td><td>ઠબુળા</td><td><input type="number" class="auto" id="a_ઠબુળા" value="0"></td></tr>
 <tr><td><input type="number" oninput="calc()" id="s_દહીં"></td><td>દહીં</td><td><input type="number" class="auto" id="a_દહીં" value="0"></td></tr>
-<tr><td><input type="number" oninput="calc()" id="s_ખાટી છાસ"></td><td>ખાટી છાસ</td><td><input type="number" class="auto" id="a_ખાટી છાસ" value="0"></td></tr>
+<tr><td><input type="number" oninput="calc()" id="s_ખાટી_છાસ"></td><td>ખાટી છાસ</td><td><input type="number" class="auto" id="a_ખાટી_છાસ" value="0"></td></tr>
 <tr><td><input type="number" oninput="calc()" id="s_માખણ"></td><td>માખણ</td><td><input type="number" class="auto" id="a_માખણ" value="0"></td></tr>
+
 </table>
 
 <div class="actions">
@@ -144,14 +147,12 @@ input[type=number]{
 
 <button class="wa" onclick="shareWA()">🟢 WhatsApp</button>
 
-<!-- DAILY REPORT -->
 <div class="report">
   <h3>📊 Daily Analysis</h3>
   <div><span>Total Items</span><span id="totalItems">0</span></div>
   <div><span>Total Quantity</span><span id="totalQty">0</span></div>
 </div>
 
-<!-- MONTHLY REPORT -->
 <div class="report">
   <h3>📅 Monthly Analysis</h3>
   <input type="month" id="month">
@@ -161,14 +162,15 @@ input[type=number]{
 </div>
 
 <div class="footer">Firebase Cloud • Full Analysis</div>
+
 </div>
 </div>
 </div>
 
 <!-- 🔥 FIREBASE -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCPveLcyEdbBok7gIeL-5aDDmszskKqu6Y",
@@ -183,14 +185,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const items=["લીટર","તાજા","છાસ","ઠબુળા","દહીં","ખાટી છાસ","માખણ"];
+const items=["લીટર","તાજા","છાસ","ઠબુળા","દહીં","ખાટી_છાસ","માખણ"];
 
 window.calc=()=>{
   let total=0;
   items.forEach(i=>{
     const s=Number(document.getElementById("s_"+i).value||0);
     const a=document.getElementById("a_"+i);
-    if(a.value===""||a.value=="0"){a.value=s;}
+    if(a.value===""||a.value=="0") a.value=s;
     total+=Number(a.value||0);
   });
   document.getElementById("totalItems").innerText=items.length;
@@ -202,8 +204,10 @@ window.saveData=()=>{
   if(!date){alert("તારીખ પસંદ કરો");return;}
   let data={};
   items.forEach(i=>data[i]=Number(document.getElementById("a_"+i).value||0));
-  set(ref(db,"stockSheet/"+date),data);
-  alert("Saved ✅");
+
+  set(ref(db,"stockSheet/"+date),data)
+  .then(()=>alert("Saved ✅"))
+  .catch(e=>alert("Firebase Error ❌\n"+e.message));
 };
 
 window.loadData=()=>{
@@ -248,7 +252,10 @@ window.searchItem=q=>{
 
 window.shareWA=()=>{
   let msg="📦 Daily Stock\n\n"; let t=0;
-  items.forEach(i=>{const v=Number(document.getElementById("a_"+i).value||0);msg+=`${i}: ${v}\n`;t+=v;});
+  items.forEach(i=>{
+    const v=Number(document.getElementById("a_"+i).value||0);
+    msg+=`${i}: ${v}\n`; t+=v;
+  });
   msg+="\nTotal: "+t;
   window.open("https://wa.me/?text="+encodeURIComponent(msg));
 };
