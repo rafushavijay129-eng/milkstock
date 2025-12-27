@@ -1,161 +1,100 @@
-<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Labour Register | APMC</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+let shops = {};
+let currentShop = "";
+let stock = 0;
+let monthIn = 0;
+let monthOut = 0;
 
-<style>
-body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:linear-gradient(135deg,#0f9d58,#34a853);
-    height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+function addShop(){
+  const name = document.getElementById("newShop").value.trim();
+  if(name === ""){
+    alert("દુકાન નામ લખો");
+    return;
+  }
+  if(!shops[name]){
+    shops[name] = { data: [], stock:0, in:0, out:0 };
+  }
+  document.getElementById("newShop").value="";
+  renderShops();
 }
-.register-box{
-    background:#fff;
-    width:360px;
-    padding:30px;
-    border-radius:15px;
-    box-shadow:0 15px 40px rgba(0,0,0,0.2);
-    text-align:center;
+
+function renderShops(){
+  const sel = document.getElementById("shopSelect");
+  sel.innerHTML = "<option value=''>-- દુકાન પસંદ કરો --</option>";
+  for(let s in shops){
+    sel.innerHTML += `<option value="${s}">${s}</option>`;
+  }
 }
-.register-box img{
-    width:80px;
-    margin-bottom:10px;
+
+function loadShopData(){
+  currentShop = document.getElementById("shopSelect").value;
+  if(currentShop==="") return;
+
+  const shop = shops[currentShop];
+  stock = shop.stock;
+  monthIn = shop.in;
+  monthOut = shop.out;
+
+  document.getElementById("data").innerHTML = "";
+  shop.data.forEach(r=>{
+    document.getElementById("data").innerHTML += `
+      <tr>
+        <td>${r.date}</td>
+        <td>${r.in}</td>
+        <td>${r.out}</td>
+        <td class="total">${r.balance}</td>
+      </tr>`;
+  });
+
+  document.getElementById("totalIn").innerText = monthIn;
+  document.getElementById("totalOut").innerText = monthOut;
+  document.getElementById("totalBalance").innerText = stock;
 }
-.register-box h2{
-    color:#0f9d58;
-    margin:5px 0;
-}
-.register-box p{
-    font-size:14px;
-    color:#666;
-}
-.input-box{
-    text-align:left;
-    margin-bottom:15px;
-}
-.input-box label{
-    font-size:13px;
-}
-.input-box input{
-    width:100%;
-    padding:12px;
-    border-radius:8px;
-    border:1px solid #ccc;
-    margin-top:5px;
-}
-.input-box input:focus{
-    border-color:#0f9d58;
-    outline:none;
-}
-.register-btn{
-    width:100%;
-    padding:12px;
-    background:#0f9d58;
-    color:#fff;
-    border:none;
-    border-radius:8px;
-    font-size:16px;
-    cursor:pointer;
-}
-.register-btn:hover{
-    background:#0b8043;
-}
-.extra{
-    margin-top:15px;
-    font-size:13px;
-}
-.extra a{
-    color:#0f9d58;
-    text-decoration:none;
-    font-weight:bold;
-}
-.footer{
-    margin-top:15px;
-    font-size:12px;
-    color:#999;
-}
-</style>
-</head>
 
-<body>
+function addData(){
+  if(currentShop===""){
+    alert("પહેલા દુકાન પસંદ કરો");
+    return;
+  }
 
-<div class="register-box">
-    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png">
-    <h2>Labour Register</h2>
-    <p>APMC Junagadh</p>
+  const date = document.getElementById("date").value;
+  const inMilk = Number(document.getElementById("inMilk").value || 0);
+  const outMilk = Number(document.getElementById("outMilk").value || 0);
 
-    <div class="input-box">
-        <label>Full Name</label>
-        <input type="text" id="name" placeholder="Enter full name">
-    </div>
+  if(date===""){
+    alert("તારીખ પસંદ કરો");
+    return;
+  }
 
-    <div class="input-box">
-        <label>Mobile Number</label>
-        <input type="number" id="mobile" placeholder="Enter mobile number">
-    </div>
+  stock = stock + inMilk - outMilk;
+  monthIn += inMilk;
+  monthOut += outMilk;
 
-    <div class="input-box">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="Create password">
-    </div>
+  const record = {
+    date: date,
+    in: inMilk,
+    out: outMilk,
+    balance: stock
+  };
 
-    <button class="register-btn" onclick="register()">Register</button>
+  shops[currentShop].data.push(record);
+  shops[currentShop].stock = stock;
+  shops[currentShop].in = monthIn;
+  shops[currentShop].out = monthOut;
 
-    <div class="extra">
-        Already registered? <a href="login.html">Login</a>
-    </div>
+  document.getElementById("totalIn").innerText = monthIn;
+  document.getElementById("totalOut").innerText = monthOut;
+  document.getElementById("totalBalance").innerText = stock;
 
-    <div class="footer">
-        © 2025 APMC Junagadh
-    </div>
-</div>
+  document.getElementById("data").innerHTML += `
+    <tr>
+      <td>${date}</td>
+      <td>${inMilk}</td>
+      <td>${outMilk}</td>
+      <td class="total">${stock}</td>
+    </tr>`;
 
-<!-- 🔥 Firebase Register Script -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-  databaseURL: "https://apmc-6eb31-default-rtdb.asia-southeast1.firebasedatabase.app/"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-window.register = function () {
-    let name = document.getElementById("name").value;
-    let mobile = document.getElementById("mobile").value;
-    let password = document.getElementById("password").value;
-
-    if(name=="" || mobile=="" || password==""){
-        alert("All fields required");
-        return;
-    }
-
-    const userRef = ref(db, "labours/" + mobile);
-
-    get(userRef).then((snapshot)=>{
-        if(snapshot.exists()){
-            alert("Mobile already registered ❌");
-        }else{
-            set(userRef,{
-                name: name,
-                password: password,
-                status: "active"
-            }).then(()=>{
-                alert("Register Successful ✅");
-                window.location.href = "login.html";
-            });
-        }
-    });
+  document.getElementById("inMilk").value="";
+  document.getElementById("outMilk").value="";
 }
 </script>
-
-</body>
-</html>
