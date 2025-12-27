@@ -1,100 +1,258 @@
-<script>
-let shops = {};
-let currentShop = "";
-let stock = 0;
-let monthIn = 0;
-let monthOut = 0;
+<!DOCTYPE html>
+<html lang="gu">
+<head>
+<meta charset="UTF-8">
+<title>Auto Stock Sheet + Daily & Monthly Report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-function addShop(){
-  const name = document.getElementById("newShop").value.trim();
-  if(name === ""){
-    alert("દુકાન નામ લખો");
-    return;
-  }
-  if(!shops[name]){
-    shops[name] = { data: [], stock:0, in:0, out:0 };
-  }
-  document.getElementById("newShop").value="";
-  renderShops();
+<style>
+:root{
+  --primary:#4f46e5;
+  --green:#22c55e;
+  --bg:#f1f5f9;
+}
+body{
+  margin:0;
+  font-family: system-ui, Arial;
+  background:var(--bg);
+}
+.container{
+  max-width:430px;
+  margin:20px auto;
+  padding:10px;
+}
+.card{
+  background:#fff;
+  border-radius:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.12);
+  overflow:hidden;
+}
+.header{
+  background:linear-gradient(135deg,var(--primary),#6366f1);
+  color:#fff;
+  padding:18px;
+  text-align:center;
+}
+.body{padding:15px}
+
+label{font-weight:600}
+input[type=date],input[type=month],.search{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #ddd;
+  margin:8px 0 12px;
 }
 
-function renderShops(){
-  const sel = document.getElementById("shopSelect");
-  sel.innerHTML = "<option value=''>-- દુકાન પસંદ કરો --</option>";
-  for(let s in shops){
-    sel.innerHTML += `<option value="${s}">${s}</option>`;
-  }
+table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0 8px;
+}
+th{font-size:13px;color:#555}
+td{
+  background:#f8fafc;
+  border-radius:12px;
+  padding:6px;
+  text-align:center;
+}
+input[type=number]{
+  width:90%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:15px;
+}
+.auto{
+  background:#e0e7ff;
+  font-weight:700;
+  color:#1e40af;
 }
 
-function loadShopData(){
-  currentShop = document.getElementById("shopSelect").value;
-  if(currentShop==="") return;
+.actions{display:flex;gap:10px;margin-top:15px}
+.btn{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  color:#fff;
+}
+.save{background:#f59e0b}
+.load{background:#3b82f6}
+.wa{
+  width:100%;
+  margin-top:12px;
+  background:var(--green);
+  padding:14px;
+  border-radius:14px;
+  border:none;
+  font-size:17px;
+  color:#fff;
+}
 
-  const shop = shops[currentShop];
-  stock = shop.stock;
-  monthIn = shop.in;
-  monthOut = shop.out;
+.report{
+  margin-top:20px;
+  background:#f8fafc;
+  padding:12px;
+  border-radius:14px;
+}
+.report h3{text-align:center;margin:0 0 10px}
+.report div{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+  border-bottom:1px dashed #ccc;
+  font-weight:600;
+}
+.report div:last-child{border:none}
 
-  document.getElementById("data").innerHTML = "";
-  shop.data.forEach(r=>{
-    document.getElementById("data").innerHTML += `
-      <tr>
-        <td>${r.date}</td>
-        <td>${r.in}</td>
-        <td>${r.out}</td>
-        <td class="total">${r.balance}</td>
-      </tr>`;
+.footer{text-align:center;font-size:12px;color:#666;margin-top:10px}
+</style>
+</head>
+
+<body>
+<div class="container">
+<div class="card">
+
+<div class="header">
+  <h2>📦 Auto Stock Sheet</h2>
+  <div style="opacity:.9;font-size:14px">Daily + Monthly Analysis</div>
+</div>
+
+<div class="body">
+<label>📅 તારીખ પસંદ કરો</label>
+<input type="date" id="date">
+
+<input class="search" placeholder="🔍 વસ્તુ શોધો..." onkeyup="searchItem(this.value)">
+
+<table id="tbl">
+<tr><th>Stock</th><th>Item</th><th>Auto</th></tr>
+<tr><td><input type="number" oninput="calc()" id="s_લીટર"></td><td>લીટર</td><td><input type="number" class="auto" id="a_લીટર" value="0"></td></tr>
+<tr><td><input type="number" oninput="calc()" id="s_તાજા"></td><td>તાજા</td><td><input type="number" class="auto" id="a_તાજા" value="0"></td></tr>
+<tr><td><input type="number" oninput="calc()" id="s_છાસ"></td><td>છાસ</td><td><input type="number" class="auto" id="a_છાસ" value="0"></td></tr>
+<tr><td><input type="number" oninput="calc()" id="s_ઠબુળા"></td><td>ઠબુળા</td><td><input type="number" class="auto" id="a_છાણા" value="0"></td></tr>
+<tr><td><input type="number" oninput="calc()" id="s_દહીં"></td><td>દહીં</td><td><input type="number" class="auto" id="a_દહીં" value="0"></td></tr>
+<tr><td><input type="number" oninput="calc()" id="s_ખાટી છાસ"></td><td>ખાટી છાસ</td><td><input type="number" class="auto" id="a_ખાટી છાસ" value="0"></td></tr>
+<tr><td><input type="number" oninput="calc()" id="s_માખણ"></td><td>માખણ</td><td><input type="number" class="auto" id="a_માખણ" value="0"></td></tr>
+</table>
+
+<div class="actions">
+  <button class="btn save" onclick="saveData()">💾 Save</button>
+  <button class="btn load" onclick="loadData()">📂 Load</button>
+</div>
+
+<button class="wa" onclick="shareWA()">🟢 WhatsApp</button>
+
+<!-- DAILY REPORT -->
+<div class="report">
+  <h3>📊 Daily Analysis</h3>
+  <div><span>Total Items</span><span id="totalItems">0</span></div>
+  <div><span>Total Quantity</span><span id="totalQty">0</span></div>
+</div>
+
+<!-- MONTHLY REPORT -->
+<div class="report">
+  <h3>📅 Monthly Analysis</h3>
+  <input type="month" id="month">
+  <button class="btn load" onclick="loadMonthly()">📂 Load Monthly</button>
+  <div id="monthlyReport"></div>
+  <div><strong>Grand Total</strong><strong id="monthlyTotal">0</strong></div>
+</div>
+
+<div class="footer">Firebase Cloud • Full Analysis</div>
+</div>
+</div>
+</div>
+
+<!-- 🔥 FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCPveLcyEdbBok7gIeL-5aDDmszskKqu6Y",
+  authDomain: "milk-909f0.firebaseapp.com",
+  databaseURL: "https://milk-909f0-default-rtdb.firebaseio.com",
+  projectId: "milk-909f0",
+  storageBucket: "milk-909f0.appspot.com",
+  messagingSenderId: "860809481428",
+  appId: "1:860809481428:web:276268e8f6b599f983bf41"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const items=["લીટર","તાજા","છાસ","ઠબુળા","દહીં","ખાટી છાસ","માખણ"];
+
+window.calc=()=>{
+  let total=0;
+  items.forEach(i=>{
+    const s=Number(document.getElementById("s_"+i).value||0);
+    const a=document.getElementById("a_"+i);
+    if(a.value===""||a.value=="0"){a.value=s;}
+    total+=Number(a.value||0);
   });
+  document.getElementById("totalItems").innerText=items.length;
+  document.getElementById("totalQty").innerText=total;
+};
 
-  document.getElementById("totalIn").innerText = monthIn;
-  document.getElementById("totalOut").innerText = monthOut;
-  document.getElementById("totalBalance").innerText = stock;
-}
+window.saveData=()=>{
+  const date=document.getElementById("date").value;
+  if(!date){alert("તારીખ પસંદ કરો");return;}
+  let data={};
+  items.forEach(i=>data[i]=Number(document.getElementById("a_"+i).value||0));
+  set(ref(db,"stockSheet/"+date),data);
+  alert("Saved ✅");
+};
 
-function addData(){
-  if(currentShop===""){
-    alert("પહેલા દુકાન પસંદ કરો");
-    return;
-  }
+window.loadData=()=>{
+  const date=document.getElementById("date").value;
+  if(!date){alert("તારીખ પસંદ કરો");return;}
+  get(ref(db,"stockSheet/"+date)).then(s=>{
+    if(!s.exists()){alert("No Data");return;}
+    const d=s.val(); let t=0;
+    items.forEach(i=>{
+      document.getElementById("s_"+i).value=d[i]||0;
+      document.getElementById("a_"+i).value=d[i]||0;
+      t+=Number(d[i]||0);
+    });
+    document.getElementById("totalQty").innerText=t;
+  });
+};
 
-  const date = document.getElementById("date").value;
-  const inMilk = Number(document.getElementById("inMilk").value || 0);
-  const outMilk = Number(document.getElementById("outMilk").value || 0);
+window.loadMonthly=async()=>{
+  const month=document.getElementById("month").value;
+  if(!month){alert("મહિનો પસંદ કરો");return;}
+  let totals={}; items.forEach(i=>totals[i]=0);
+  const snap=await get(ref(db,"stockSheet"));
+  snap.forEach(d=>{
+    if(d.key.startsWith(month)){
+      const v=d.val();
+      items.forEach(i=>totals[i]+=Number(v[i]||0));
+    }
+  });
+  let html="",g=0;
+  items.forEach(i=>{html+=`<div><span>${i}</span><span>${totals[i]}</span></div>`;g+=totals[i];});
+  document.getElementById("monthlyReport").innerHTML=html;
+  document.getElementById("monthlyTotal").innerText=g;
+};
 
-  if(date===""){
-    alert("તારીખ પસંદ કરો");
-    return;
-  }
+window.searchItem=q=>{
+  q=q.toLowerCase();
+  document.querySelectorAll("#tbl tr").forEach((r,i)=>{
+    if(i==0)return;
+    r.style.display=r.innerText.toLowerCase().includes(q)?"":"none";
+  });
+};
 
-  stock = stock + inMilk - outMilk;
-  monthIn += inMilk;
-  monthOut += outMilk;
-
-  const record = {
-    date: date,
-    in: inMilk,
-    out: outMilk,
-    balance: stock
-  };
-
-  shops[currentShop].data.push(record);
-  shops[currentShop].stock = stock;
-  shops[currentShop].in = monthIn;
-  shops[currentShop].out = monthOut;
-
-  document.getElementById("totalIn").innerText = monthIn;
-  document.getElementById("totalOut").innerText = monthOut;
-  document.getElementById("totalBalance").innerText = stock;
-
-  document.getElementById("data").innerHTML += `
-    <tr>
-      <td>${date}</td>
-      <td>${inMilk}</td>
-      <td>${outMilk}</td>
-      <td class="total">${stock}</td>
-    </tr>`;
-
-  document.getElementById("inMilk").value="";
-  document.getElementById("outMilk").value="";
-}
+window.shareWA=()=>{
+  let msg="📦 Daily Stock\n\n"; let t=0;
+  items.forEach(i=>{const v=Number(document.getElementById("a_"+i).value||0);msg+=`${i}: ${v}\n`;t+=v;});
+  msg+="\nTotal: "+t;
+  window.open("https://wa.me/?text="+encodeURIComponent(msg));
+};
 </script>
+
+</body>
+</html>
